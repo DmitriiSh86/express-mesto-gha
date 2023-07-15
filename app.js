@@ -1,17 +1,17 @@
 const express = require('express');
+const mongoose = require('mongoose');
+const router = require('./routes/users');
 
-const { PORT = 3000 } = process.env;
+mongoose.connect('mongodb://127.0.0.1:27017/mydb', {
+  useNewUrlParser: true,
+});
 
 const app = express();
 
-app.get('/', (req, res) => {
-  res.send(
-    `<html>
-          <body>
-              <p>Ответ на сигнал из далёкого космоса!!</p>
-          </body>
-          </html>`,
-  );
-});
+app.use('/users', require('./routes/users'));
 
-app.listen(PORT, () => {});
+app.use(express.json());
+
+app.use(router);
+
+app.listen(3000);
