@@ -2,7 +2,7 @@ const Card = require('../models/cards');
 
 module.exports.getCards = (req, res) => {
   Card.find({})
-    .then((card) => res.send({ data: card }))
+    .then((card) => res.status(200).send({ data: card }))
     .catch(() => res.status(500).send({ message: 'Произошла ошибка' }));
 };
 
@@ -14,14 +14,14 @@ module.exports.createCard = (req, res) => {
   Card.create({
     name, link, owner, likes, createdAt,
   })
-    .then((card) => res.send({ data: card }))
+    .then((card) => res.status(200).send({ data: card }))
     .catch(() => res.status(500).send({ message: 'Произошла ошибка' }));
 };
 
 module.exports.deleteCard = (req, res) => {
   const { cardId } = req.params;
   Card.findByIdAndRemove(cardId)
-    .then((card) => res.send({ data: card }))
+    .then((card) => res.status(200).send({ data: card }))
     .catch(() => res.status(500).send({ message: 'Произошла ошибка' }));
 };
 
@@ -30,7 +30,7 @@ module.exports.likeCard = (req, res) => Card.findByIdAndUpdate(
   { $addToSet: { likes: req.user._id } },
   { new: true },
 )
-  .then((card) => res.send({ data: card }))
+  .then((card) => res.status(200).send({ data: card }))
   .catch(() => res.status(500).send({ message: 'Произошла ошибка' }));
 
 module.exports.dislikeCard = (req, res) => Card.findByIdAndUpdate(
@@ -38,5 +38,5 @@ module.exports.dislikeCard = (req, res) => Card.findByIdAndUpdate(
   { $pull: { likes: req.user._id } },
   { new: true },
 )
-  .then((card) => res.send({ data: card }))
+  .then((card) => res.status(200).send({ data: card }))
   .catch(() => res.status(500).send({ message: 'Произошла ошибка' }));
