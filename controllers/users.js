@@ -11,8 +11,17 @@ module.exports.getUsers = (req, res) => {
 module.exports.getUser = (req, res) => {
   const { userId } = req.params;
   User.findById(userId)
+    .orFail(new Error('badId'))
     .then((user) => res.status(200).send({ data: user }))
-    .catch((err) => res.status(400).send(err.message));
+    .catch((err) => {
+      if (err.message === 'badId') {
+        return res.status(404).send({ message: 'Произошла ошибка' });
+      }
+      if (err.message === 'CastError') {
+        return res.status(400).send({ message: 'Произошла ошибка' });
+      }
+      return res.status(500).send(err.name);
+    });
 };
 
 module.exports.createUser = (req, res) => {
