@@ -33,6 +33,7 @@ const usersSchema = new mongoose.Schema({
   },
 });
 
+// eslint-disable-next-line func-names
 usersSchema.statics.findUserByCredentials = function (email, password) {
   return this.findOne({ email })
     .then((user) => {
@@ -46,7 +47,7 @@ usersSchema.statics.findUserByCredentials = function (email, password) {
             return Promise.reject(new Error('Неправильные почта или пароль'));
           }
 
-          return user; // теперь user доступен
+          return user;
         });
     });
 };

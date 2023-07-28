@@ -85,8 +85,10 @@ module.exports.login = (req, res) => {
 
   return User.findUserByCredentials(email, password)
     .then((user) => {
-      const token = jwt.sign({ _id: user._id }, 'some-secret-key', { expiresIn: '7d' });
-      res.send({ token });
+      const payload = { _id: user._id };
+      const token = jwt.sign(payload, 'some-secret-key', { expiresIn: '7d' });
+      res.cookie('jwt', token);
+      return res.send({ user: payload });
     })
     .catch((err) => {
       res
@@ -96,7 +98,7 @@ module.exports.login = (req, res) => {
 };
 
 module.exports.getMe = (req, res) => {
-  const { userId } = req.user;
+  const userId = req.user._id;
   User.findById(userId)
     .orFail(new Error('badId'))
     .then((user) => res.send({ data: user }))
