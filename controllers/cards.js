@@ -1,3 +1,4 @@
+/* eslint-disable consistent-return */
 const Card = require('../models/cards');
 const {
   BAD_REQUEST,
@@ -28,8 +29,17 @@ module.exports.createCard = (req, res) => {
     });
 };
 
-module.exports.deleteCard = (req, res) => {
+module.exports.deleteCard = async (req, res) => {
   const { cardId } = req.params;
+  const userId = req.user._id;
+  const cardFound = await Card.findById(cardId).lean();
+  if (!cardFound) {
+    return res.status(400).json({ message: 'Неверные данные' });
+  }
+  const cardOwner = cardFound.owner.valueOf();
+  if (userId !== cardOwner) {
+    return res.status(400).json({ message: 'Это не ваша карточка' });
+  }
   Card.findByIdAndRemove(cardId)
     .orFail(new Error('badId'))
     .then((card) => res.send({ data: card }))

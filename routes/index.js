@@ -10,7 +10,7 @@ router.use('/signin', signinRouter);
 router.use('/signup', signupRouter);
 
 router.use('/users', auth, usersRouter);
-router.use('/cards', cardsRouter);
+router.use('/cards', auth, cardsRouter);
 
 router.use((req, res) => {
   res.status(NOT_FOUND).send({ message: 'Такого адреса не существует' });
