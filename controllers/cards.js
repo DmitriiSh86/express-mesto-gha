@@ -1,18 +1,16 @@
 /* eslint-disable consistent-return */
 const Card = require('../models/cards');
-const {
-  BAD_REQUEST,
-  NOT_FOUND,
-  INTERNAL_SERVER_ERROR,
-} = require('../utils/error');
+const NotFoundError = require('../errors/not-found-error');
+const BadRequest = require('../errors/bad-request-error');
+const InternalServer = require('../errors/internal-server-error');
 
-module.exports.getCards = (req, res) => {
+module.exports.getCards = (req, res, next) => {
   Card.find({})
     .then((card) => res.send({ data: card }))
-    .catch(() => res.status(INTERNAL_SERVER_ERROR).send({ message: 'Произошла ошибка' }));
+    .catch(() => next(new InternalServer('Произошла ошибка')));
 };
 
-module.exports.createCard = (req, res) => {
+module.exports.createCard = (req, res, next) => {
   const {
     name, link, likes, createdAt,
   } = req.body;
@@ -23,67 +21,67 @@ module.exports.createCard = (req, res) => {
     .then((card) => res.send({ data: card }))
     .catch((err) => {
       if (err.name === 'ValidationError') {
-        return res.status(BAD_REQUEST).send({ message: 'Переданы некоректные данные' });
+        return next(new BadRequest('Переданный id некорректен'));
       }
-      return res.status(INTERNAL_SERVER_ERROR).send({ message: 'Произошла ошибка' });
+      return next(new InternalServer('Произошла ошибка'));
     });
 };
 
-module.exports.deleteCard = async (req, res) => {
+module.exports.deleteCard = async (req, res, next) => {
   const { cardId } = req.params;
   const userId = req.user._id;
   const cardFound = await Card.findById(cardId).lean();
   if (!cardFound) {
-    return res.status(400).json({ message: 'Неверные данные' });
+    return next(new NotFoundError('Неверные данные'));
   }
   const cardOwner = cardFound.owner.valueOf();
   if (userId !== cardOwner) {
-    return res.status(400).json({ message: 'Это не ваша карточка' });
+    return next(new BadRequest('Это не ваша карточка'));
   }
   Card.findByIdAndRemove(cardId)
-    .orFail(new Error('badId'))
+    .orFail(new NotFoundError('Карточки с таким id нет'))
     .then((card) => res.send({ data: card }))
     .catch((err) => {
-      if (err.message === 'badId') {
-        return res.status(NOT_FOUND).send({ message: 'Карточки с таким id нет' });
+      if (err.statusCode === 404) {
+        return next(err);
       }
       if (err.name === 'CastError') {
-        return res.status(BAD_REQUEST).send({ message: 'Переданный id некорректен' });
+        return next(new BadRequest('Переданный id некорректен'));
       }
-      return res.status(INTERNAL_SERVER_ERROR).send({ message: 'Произошла ошибка' });
+      return next(new InternalServer('Произошла ошибка'));
     });
 };
 
-module.exports.likeCard = (req, res) => Card.findByIdAndUpdate(
+module.exports.likeCard = (req, res, next) => Card.findByIdAndUpdate(
   req.params.cardId,
   { $addToSet: { likes: req.user._id } },
   { new: true },
 )
-  .orFail(new Error('badId'))
+  .orFail(new NotFoundError('Карточки с таким id нет'))
   .then((card) => res.send({ data: card }))
   .catch((err) => {
-    if (err.message === 'badId') {
-      return res.status(NOT_FOUND).send({ message: 'Карточки с таким id нет' });
+    if (err.statusCode === 404) {
+      return next(err);
     }
     if (err.name === 'CastError') {
-      return res.status(BAD_REQUEST).send({ message: 'Переданный id некорректен' });
+      return next(new BadRequest('Переданный id некорректен'));
     }
-    return res.status(INTERNAL_SERVER_ERROR).send({ message: 'Произошла ошибка' });
+    return next(new InternalServer('Произошла ошибка'));
   });
 
-module.exports.dislikeCard = (req, res) => Card.findByIdAndUpdate(
+module.exports.dislikeCard = (req, res, next) => Card.findByIdAndUpdate(
   req.params.cardId,
   { $pull: { likes: req.user._id } },
   { new: true },
 )
-  .orFail(new Error('badId'))
+  .orFail(new NotFoundError('Карточки с таким id нет'))
   .then((card) => res.send({ data: card }))
   .catch((err) => {
-    if (err.message === 'badId') {
-      return res.status(NOT_FOUND).send({ message: 'Карточки с таким id нет' });
+    if (err.statusCode === 404) {
+      return next(err);
     }
     if (err.name === 'CastError') {
-      return res.status(BAD_REQUEST).send({ message: 'Переданный id некорректен' });
+      return next(new BadRequest('Переданный id некорректен'));
     }
-    return res.status(INTERNAL_SERVER_ERROR).send({ message: 'Произошла ошибка' });
+    return next(new InternalServer('Произошла ошибка'));
   });
