@@ -95,10 +95,7 @@ module.exports.login = (req, res, next) => {
       res.cookie('jwt', token);
       return res.send({ user: payload });
     })
-    .catch((err) => {
-      console.log(err);
-      return next(new Unauthorized('Неверные данные'));
-    });
+    .catch(() => next(new Unauthorized('Неверные данные')));
 };
 
 module.exports.getMe = (req, res, next) => {
