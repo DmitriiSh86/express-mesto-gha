@@ -21,7 +21,7 @@ module.exports.createCard = (req, res, next) => {
     .then((card) => res.send({ data: card }))
     .catch((err) => {
       if (err.name === 'ValidationError') {
-        return next(new BadRequest('Переданный id некорректен'));
+        return next(new BadRequest('Переданный некорректные данные'));
       }
       return next(new InternalServer('Произошла ошибка'));
     });
