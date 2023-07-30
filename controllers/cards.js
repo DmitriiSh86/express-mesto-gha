@@ -3,6 +3,7 @@ const Card = require('../models/cards');
 const NotFoundError = require('../errors/not-found-error');
 const BadRequest = require('../errors/bad-request-error');
 const InternalServer = require('../errors/internal-server-error');
+const Forbidden = require('../errors/forbidden-error');
 
 module.exports.getCards = (req, res, next) => {
   Card.find({})
@@ -36,7 +37,7 @@ module.exports.deleteCard = async (req, res, next) => {
   }
   const cardOwner = cardFound.owner.valueOf();
   if (userId !== cardOwner) {
-    return next(new BadRequest('Это не ваша карточка'));
+    return next(new Forbidden('Это не ваша карточка'));
   }
   Card.findByIdAndRemove(cardId)
     .orFail(new NotFoundError('Карточки с таким id нет'))

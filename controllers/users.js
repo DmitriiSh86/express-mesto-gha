@@ -4,7 +4,7 @@ const User = require('../models/users');
 const NotFoundError = require('../errors/not-found-error');
 const BadRequest = require('../errors/bad-request-error');
 const InternalServer = require('../errors/internal-server-error');
-const Unauthorized = require('../errors/internal-server-error');
+const Unauthorized = require('../errors/unauthorized-error');
 const Conflict = require('../errors/conflict-error');
 
 module.exports.getUsers = (req, res, next) => {
@@ -37,7 +37,11 @@ module.exports.createUser = (req, res, next) => {
     .then((hash) => User.create({
       name, about, avatar, email, password: hash,
     }))
-    .then((user) => res.send({ data: user }))
+    .then((user) => res.send({
+      user: {
+        _id: user._id, name: user.name, about: user.about, avatar: user.avatar, email: user.email,
+      },
+    }))
     .catch((err) => {
       if (err.name === 'ValidationError') {
         return next(new BadRequest('Переданы некоректные данные'));
@@ -91,7 +95,10 @@ module.exports.login = (req, res, next) => {
       res.cookie('jwt', token);
       return res.send({ user: payload });
     })
-    .catch(() => next(new Unauthorized('Неверные данные')));
+    .catch((err) => {
+      console.log(err);
+      return next(new Unauthorized('Неверные данные'));
+    });
 };
 
 module.exports.getMe = (req, res, next) => {
