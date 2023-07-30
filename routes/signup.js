@@ -6,6 +6,8 @@ router.post('/', celebrate({
   body: Joi.object().keys({
     email: Joi.string().required().email(),
     password: Joi.string().min(8).required(),
+    about: Joi.string().min(2).max(30),
+    avatar: Joi.string().required().regex(/^(https?:\/\/)?([a-z0-9._~:/?#@!&'()][*+,;=-]+\.)*[a-z0-9._~:/?#@!&'()*+,;=-]+\.[a-z]{2,}\/?([^\s]*)$/),
   }),
 }), createUser);
 
