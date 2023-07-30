@@ -3,6 +3,7 @@ const router = require('express').Router();
 const {
   getUsers, getUser, updateProfile, updateAvatar, getMe,
 } = require('../controllers/users');
+const regexUrl = require('../utils/regex');
 
 router.get('/', getUsers);
 router.get('/me', getMe);
@@ -19,7 +20,7 @@ router.patch('/me', celebrate({
 }), updateProfile);
 router.patch('/me/avatar', celebrate({
   body: Joi.object().keys({
-    avatar: Joi.string().required().regex(/^(https?:\/\/)?([a-z0-9._~:/?#@!&'()][*+,;=-]+\.)*[a-z0-9._~:/?#@!&'()*+,;=-]+\.[a-z]{2,}\/?([^\s]*)$/),
+    avatar: Joi.string().required().regex(regexUrl),
   }),
 }), updateAvatar);
 

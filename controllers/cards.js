@@ -4,6 +4,7 @@ const NotFoundError = require('../errors/not-found-error');
 const BadRequest = require('../errors/bad-request-error');
 const InternalServer = require('../errors/internal-server-error');
 const Forbidden = require('../errors/forbidden-error');
+const { CREATED_STATUS } = require('../utils/status');
 
 module.exports.getCards = (req, res, next) => {
   Card.find({})
@@ -19,7 +20,7 @@ module.exports.createCard = (req, res, next) => {
   Card.create({
     name, link, owner, likes, createdAt,
   })
-    .then((card) => res.send({ data: card }))
+    .then((card) => res.status(CREATED_STATUS).send({ data: card }))
     .catch((err) => {
       if (err.name === 'ValidationError') {
         return next(new BadRequest('Переданный некорректные данные'));
@@ -39,7 +40,7 @@ module.exports.deleteCard = async (req, res, next) => {
   if (userId !== cardOwner) {
     return next(new Forbidden('Это не ваша карточка'));
   }
-  Card.findByIdAndRemove(cardId)
+  Card.deleteOne(cardFound)
     .orFail(new NotFoundError('Карточки с таким id нет'))
     .then((card) => res.send({ data: card }))
     .catch((err) => {

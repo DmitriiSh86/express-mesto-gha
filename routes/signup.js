@@ -1,6 +1,7 @@
 const { celebrate, Joi } = require('celebrate');
 const router = require('express').Router();
 const { createUser } = require('../controllers/users');
+const regexUrl = require('../utils/regex');
 
 router.post('/', celebrate({
   body: Joi.object().keys({
@@ -8,7 +9,7 @@ router.post('/', celebrate({
     password: Joi.string().min(8).required(),
     about: Joi.string().min(2).max(30),
     name: Joi.string().min(2).max(30),
-    avatar: Joi.string().regex(/^(https?:\/\/)?([a-z0-9._~:/?#@!&'()][*+,;=-]+\.)*[a-z0-9._~:/?#@!&'()*+,;=-]+\.[a-z]{2,}\/?([^\s]*)$/),
+    avatar: Joi.string().regex(regexUrl),
   }),
 }), createUser);
 

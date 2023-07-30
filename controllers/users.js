@@ -6,6 +6,7 @@ const BadRequest = require('../errors/bad-request-error');
 const InternalServer = require('../errors/internal-server-error');
 const Unauthorized = require('../errors/unauthorized-error');
 const Conflict = require('../errors/conflict-error');
+const { CREATED_STATUS } = require('../utils/status');
 
 module.exports.getUsers = (req, res, next) => {
   User.find({})
@@ -37,7 +38,7 @@ module.exports.createUser = (req, res, next) => {
     .then((hash) => User.create({
       name, about, avatar, email, password: hash,
     }))
-    .then((user) => res.send({
+    .then((user) => res.status(CREATED_STATUS).send({
       user: {
         _id: user._id, name: user.name, about: user.about, avatar: user.avatar, email: user.email,
       },
@@ -47,7 +48,7 @@ module.exports.createUser = (req, res, next) => {
         return next(new BadRequest('Переданы некоректные данные'));
       }
       if (err.code === 11000) {
-        next(new Conflict('Пользователь с текущим email уже занят'));
+        return next(new Conflict('Пользователь с текущим email уже занят'));
       }
       return next(new InternalServer());
     });
